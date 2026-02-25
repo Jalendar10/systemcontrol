@@ -1,0 +1,44 @@
+{
+  "project_name": "HandPilot",
+  "camera_index": 0,
+  "mirror": true,
+  "draw_landmarks": true,
+  "cooldown_ms": 850,
+  "gesture_actions": {
+    "swipe_left": {
+      "type": "builtin",
+      "name": "next_app",
+      "cooldown_ms": 650
+    },
+    "swipe_right": {
+      "type": "builtin",
+      "name": "previous_app",
+      "cooldown_ms": 650
+    },
+    "open_palm": {
+      "type": "builtin",
+      "name": "browser_next_tab"
+    },
+    "fist": {
+      "type": "builtin",
+      "name": "browser_previous_tab"
+    },
+    "point": {
+      "type": "builtin",
+      "name": "close_tab"
+    },
+    "peace": {
+      "type": "command",
+      "command": {
+        "mac": "open -a Calculator",
+        "windows": "start calc",
+        "linux": "gnome-calculator"
+      }
+    },
+    "pinch": {
+      "type": "builtin",
+      "name": "toggle_control",
+      "cooldown_ms": 1200
+    }
+  }
+}
