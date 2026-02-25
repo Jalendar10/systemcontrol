@@ -21,7 +21,6 @@ DEFAULT_CONFIG: dict[str, Any] = {
         },
         "open_palm": {"type": "builtin", "name": "browser_next_tab"},
         "fist": {"type": "builtin", "name": "browser_previous_tab"},
-        "point": {"type": "builtin", "name": "close_tab"},
         "peace": {
             "type": "command",
             "command": {
@@ -30,11 +29,24 @@ DEFAULT_CONFIG: dict[str, Any] = {
                 "linux": "gnome-calculator",
             },
         },
-        "pinch": {
+        "thumbs_up": {
             "type": "builtin",
             "name": "toggle_control",
             "cooldown_ms": 1200,
         },
+    },
+    "mouse_control": {
+        "enabled": True,
+        "pointer_gestures": ["point", "pinch", "two_finger"],
+        "consume_gestures": ["point", "pinch", "two_finger"],
+        "left_click_gesture": "pinch",
+        "scroll_gesture": "two_finger",
+        "drag_hold_ms": 320,
+        "click_max_tap_ms": 260,
+        "move_speed": 1.6,
+        "smoothing": 0.35,
+        "deadzone": 0.008,
+        "scroll_scale": 2200.0,
     },
 }
 

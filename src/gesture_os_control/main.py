@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import platform
 import time
 from pathlib import Path
 
@@ -11,6 +12,7 @@ import cv2
 from .actions import ActionExecutor
 from .config import load_config
 from .detector import GestureDetector
+from .mouse_controller import MouseController
 
 
 def _resolve_default_config(config_path: str | None) -> Path:
@@ -22,6 +24,46 @@ def _resolve_default_config(config_path: str | None) -> Path:
         return local_path
 
     return Path("config/gestures.example.json")
+
+
+def _camera_candidates(config: dict) -> list[int]:
+    configured = config.get("camera_indices")
+    if isinstance(configured, list) and configured:
+        candidates: list[int] = []
+        for value in configured:
+            try:
+                candidates.append(int(value))
+            except (TypeError, ValueError):
+                continue
+        if candidates:
+            return list(dict.fromkeys(candidates))
+
+    primary = int(config.get("camera_index", 0))
+    fallback = [0, 1, 2, 3]
+    ordered = [primary] + [idx for idx in fallback if idx != primary]
+    return list(dict.fromkeys(ordered))
+
+
+def _open_camera(config: dict) -> tuple[cv2.VideoCapture, int]:
+    candidates = _camera_candidates(config)
+    is_mac = platform.system().lower() == "darwin"
+    backend = cv2.CAP_AVFOUNDATION if is_mac else cv2.CAP_ANY
+
+    for index in candidates:
+        cap = cv2.VideoCapture(index, backend)
+        if not cap.isOpened():
+            cap.release()
+            continue
+        ok, _ = cap.read()
+        if ok:
+            return cap, index
+        cap.release()
+
+    candidate_text = ", ".join(str(idx) for idx in candidates)
+    raise RuntimeError(
+        "Cannot open any camera index (tried: "
+        f"{candidate_text}). Check camera permission and update config camera_index/camera_indices."
+    )
 
 
 def run() -> None:
@@ -38,17 +80,13 @@ def run() -> None:
     detector = GestureDetector()
     executor = ActionExecutor()
 
-    camera_index = int(config.get("camera_index", 0))
     mirror = bool(config.get("mirror", True))
     draw_landmarks = bool(config.get("draw_landmarks", True))
     default_cooldown = float(config.get("cooldown_ms", 850)) / 1000.0
     gesture_actions = config.get("gesture_actions", {})
+    mouse_controller = MouseController(config.get("mouse_control", {}))
 
-    cap = cv2.VideoCapture(camera_index)
-    if not cap.isOpened():
-        raise RuntimeError(
-            f"Cannot open camera index {camera_index}. Update your config and check camera permissions."
-        )
+    cap, active_camera_index = _open_camera(config)
 
     window_name = f"{config.get('project_name', 'HandPilot')} | q=quit p=pause r=reload"
 
@@ -58,6 +96,7 @@ def run() -> None:
     last_result = "ready"
 
     print(f"Loaded config: {config_path}")
+    print(f"Using camera index: {active_camera_index}")
     print("Press q to quit, p to pause/resume control, r to reload config.")
 
     try:
@@ -69,11 +108,17 @@ def run() -> None:
             if mirror:
                 frame = cv2.flip(frame, 1)
 
-            gesture, frame = detector.process(frame, draw_landmarks=draw_landmarks)
+            gesture, frame, hand_state = detector.process(frame, draw_landmarks=draw_landmarks)
+            mouse_result = mouse_controller.update(hand_state, active=active)
+            if mouse_result:
+                last_result = mouse_result
 
             if gesture:
                 last_gesture = gesture
-                action_def = gesture_actions.get(gesture)
+                if gesture in mouse_controller.consumed_gestures:
+                    action_def = None
+                else:
+                    action_def = gesture_actions.get(gesture)
                 if action_def:
                     now = time.time()
                     cooldown = float(action_def.get("cooldown_ms", default_cooldown * 1000)) / 1000
@@ -107,15 +152,19 @@ def run() -> None:
             if key == ord("p"):
                 active = not active
                 last_result = f"control {'ON' if active else 'OFF'}"
+                if not active:
+                    mouse_controller.reset()
             if key == ord("r"):
                 config = load_config(config_path)
                 mirror = bool(config.get("mirror", True))
                 draw_landmarks = bool(config.get("draw_landmarks", True))
                 default_cooldown = float(config.get("cooldown_ms", 850)) / 1000.0
                 gesture_actions = config.get("gesture_actions", {})
+                mouse_controller = MouseController(config.get("mouse_control", {}))
                 last_result = "config reloaded"
 
     finally:
+        mouse_controller.reset()
         cap.release()
         cv2.destroyAllWindows()
 

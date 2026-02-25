@@ -1,6 +1,7 @@
 {
   "project_name": "HandPilot",
   "camera_index": 0,
+  "camera_indices": [0, 1, 2, 3],
   "mirror": true,
   "draw_landmarks": true,
   "cooldown_ms": 850,
@@ -23,10 +24,6 @@
       "type": "builtin",
       "name": "browser_previous_tab"
     },
-    "point": {
-      "type": "builtin",
-      "name": "close_tab"
-    },
     "peace": {
       "type": "command",
       "command": {
@@ -35,10 +32,23 @@
         "linux": "gnome-calculator"
       }
     },
-    "pinch": {
+    "thumbs_up": {
       "type": "builtin",
       "name": "toggle_control",
       "cooldown_ms": 1200
     }
+  },
+  "mouse_control": {
+    "enabled": true,
+    "pointer_gestures": ["point", "pinch", "two_finger"],
+    "consume_gestures": ["point", "pinch", "two_finger"],
+    "left_click_gesture": "pinch",
+    "scroll_gesture": "two_finger",
+    "drag_hold_ms": 320,
+    "click_max_tap_ms": 260,
+    "move_speed": 1.6,
+    "smoothing": 0.35,
+    "deadzone": 0.008,
+    "scroll_scale": 2200.0
   }
 }
