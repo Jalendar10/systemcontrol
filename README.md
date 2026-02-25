@@ -1,6 +1,8 @@
 # HandPilot
 
-HandPilot is a cross-platform starter system to control your PC using hand gestures from a webcam on **macOS** and **Windows**.
+HandPilot is a cross-platform system to control your PC using hand gestures from a webcam on **macOS** and **Windows**.
+
+Repository: [https://github.com/Jalendar10/systemcontrol](https://github.com/Jalendar10/systemcontrol)
 
 ## Features
 
@@ -22,14 +24,14 @@ HandPilot is a cross-platform starter system to control your PC using hand gestu
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.11 or 3.12 (recommended: 3.11)
 - Webcam access permission
 - Accessibility/automation permissions for keyboard control
 
 ## Setup
 
 ```bash
-python3 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -37,7 +39,7 @@ pip install -r requirements.txt
 On Windows (PowerShell):
 
 ```powershell
-python -m venv .venv
+py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
@@ -60,6 +62,15 @@ handpilot
 - `q` quit
 - `p` pause/resume gesture actions
 - `r` reload config file
+
+## Quick Control Check
+
+1. Start the app and keep one hand visible in the camera frame.
+2. Try `open_palm` gesture and confirm browser moves to next tab.
+3. Try `fist` gesture and confirm browser moves to previous tab.
+4. Try `swipe_left` / `swipe_right` and confirm app switching happens.
+5. Try `pinch` to toggle control OFF, then repeat a gesture and confirm no action is triggered.
+6. Press `q` to quit.
 
 ## Custom Gestures
 
@@ -91,3 +102,12 @@ Example:
 
 - Gesture detection thresholds are intentionally conservative to reduce accidental triggers.
 - On macOS, allow Terminal/Python in **System Settings -> Privacy & Security -> Accessibility**.
+- On first run, camera and accessibility permissions must be granted.
+- License: MIT. See `LICENSE`.
+
+## Troubleshooting
+
+- If startup shows `Cannot open camera index 0`, allow camera access:
+  - macOS: **System Settings -> Privacy & Security -> Camera** and enable Terminal (or your IDE app).
+  - Windows: **Settings -> Privacy & security -> Camera** and allow desktop apps.
+- If gestures are detected but actions do not trigger, allow accessibility/input control for Terminal/Python.
